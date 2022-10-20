@@ -1,22 +1,28 @@
 package com.example.scanner
 
+import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
+import com.example.scanner.Permissions
 
 
-class MainActivity: FlutterActivity() {
+class MainActivity: FlutterFragmentActivity() {
     private val CHANNEL = "example.flutter.dev/scanner"
+    //private val permissions = Permissions()
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine);
@@ -28,13 +34,10 @@ class MainActivity: FlutterActivity() {
         methodChannel.setMethodCallHandler{
             call, result ->
             if(call.method == "getCode") {
-                val batteryLevel = getCode()
+                val intent = Intent(this, Scanner::class.java)
+                startActivity(intent)
 
-                if (batteryLevel != "-1") {
-                    result.success(batteryLevel)
-                } else {
-                    result.error("UNABAILABLE", "Battery level not available ", null)
-                }
+                // val batteryLevel1 = getCode()
             }else{
                 result.notImplemented()
 
@@ -54,4 +57,7 @@ class MainActivity: FlutterActivity() {
 
         return batteryLevel.toString()
     }
+
+    
+
 }

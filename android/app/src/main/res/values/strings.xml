@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="QR_scanner_display">Centra y escanea el código QR para pagar</string>
+    <string name="barcode_scanner_display">Centra y escanea el código de barras para pagar</string>
+</resources>
