@@ -20,7 +20,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 import com.example.scanner.Permissions
 
 
-class MainActivity: FlutterFragmentActivity() {
+class MainActivity: FlutterActivity() {
     private val CHANNEL = "example.flutter.dev/scanner"
     //private val permissions = Permissions()
 
