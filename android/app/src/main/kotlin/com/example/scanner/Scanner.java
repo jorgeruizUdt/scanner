@@ -253,6 +253,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             Log.d("Scanner", "scanContent: " + scanContent);
             Bundle bundle = getIntent().getExtras();
             String operator = bundle.getString("operator");
+
             if (Objects.equals(operator, "SACMEX")) {
                 scanContent = processSACMEXBarcode(scanContent);
                 if (scanContent.isEmpty()) return;
@@ -263,12 +264,15 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
             Intent MainIntent = new Intent(Scanner.this,
                     MainActivity.class);
+            MainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("inputElement", formElement);
             MainIntent.putExtra("FORMAT", scanFormat);
             MainIntent.putExtra("CONTENT", scanContent);
+            Log.d("SCAN_QR_11", scanContent);
 
-            this.startActivityGracefully(MainIntent);
+            this.startActivity(MainIntent);
             // stop returning and rebounding between activities
             finish();
         }else{
@@ -281,7 +285,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("FORMAT", "NA");
             MainIntent.putExtra("CONTENT", "NA");
-            this.startActivityGracefully(MainIntent);
+            this.startActivity(MainIntent);
             // stop returning and rebounding between activities
             finish();
         }

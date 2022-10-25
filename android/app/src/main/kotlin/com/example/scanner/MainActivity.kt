@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -16,32 +17,33 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "example.flutter.dev/scanner"
+    public var resultScan = ""
     //private val permissions = Permissions()
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine);
-        
-        // 1. Establezca un teléfono fijo para prepararse para la comunicación, el nombre de CHANNEL es exmaple.flutter.dev/scanner, y tenga en cuenta que debe ser el mismo que el final de flutter
+
          val methodChannel = MethodChannel(flutterEngine.dartExecutor, CHANNEL)
-        
-        // 2. Recibe el mensaje y reacciona de acuerdo con el mensaje recibido 
         methodChannel.setMethodCallHandler{
             call, result ->
-            if(call.method == "getCode") {
-                var formElement: String = "fillEnviarFromQr"
-                //var formElement: String = "BarCode"
-                var operator: String = "TELEFONIA"
-
-                val intent = Intent(this, Scanner::class.java)
-                intent.putExtra("inputElement", formElement)
-                intent.putExtra("operator", operator)
-                startActivity(intent)
-
-                // val batteryLevel1 = getCode()
+            if(call.method == "openScanner") {
+                openScanner()
+                result.success(resultScan)
             }else{
                 result.notImplemented()
             }
         }
+    }
+
+    private fun openScanner() {
+        var formElement: String = "fillEnviarFromQr"
+        //var formElement: String = "BarCode"
+        var operator: String = "CFE"
+
+        val intentS = Intent(this, Scanner::class.java)
+        intentS.putExtra("inputElement", formElement)
+        intentS.putExtra("operator", operator)
+        startActivity(intentS)
     }
 
     private fun getCode(): String {
@@ -55,6 +57,18 @@ class MainActivity: FlutterActivity() {
         }
 
         return batteryLevel.toString()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bundle = this.intent.extras
+        val CONTENT = bundle?.getString("CONTENT")
+        val FORMAT = bundle?.getString("FORMAT")
+
+        resultScan = CONTENT.toString()
+        Log.d("SCAN_QR", resultScan)
+        if (resultScan != "" && resultScan != null)
+            return;
     }
 
     

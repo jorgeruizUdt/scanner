@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
     String result;
 
     try {
-      final String channelResult = await scannerChannel.invokeMethod('getCode');
+      final String channelResult = await scannerChannel.invokeMethod('openScanner');
       result = channelResult;
     } on PlatformException catch (error) {
       result = "Platform error \n ${error.message}";
@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             Text(
               _scannerResult == null
-              ? ''
+              ? 'No hubo resultados'
               : 'Scan result: $_scannerResult',
               style: const TextStyle(fontSize: 18),
             ),
