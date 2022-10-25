@@ -1,23 +1,17 @@
 package com.example.scanner
 
-import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
-import com.example.scanner.Permissions
 
 
 class MainActivity: FlutterActivity() {
@@ -34,13 +28,18 @@ class MainActivity: FlutterActivity() {
         methodChannel.setMethodCallHandler{
             call, result ->
             if(call.method == "getCode") {
+                var formElement: String = "fillEnviarFromQr"
+                //var formElement: String = "BarCode"
+                var operator: String = "TELEFONIA"
+
                 val intent = Intent(this, Scanner::class.java)
+                intent.putExtra("inputElement", formElement)
+                intent.putExtra("operator", operator)
                 startActivity(intent)
 
                 // val batteryLevel1 = getCode()
             }else{
                 result.notImplemented()
-
             }
         }
     }

@@ -52,6 +52,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
+import io.flutter.embedding.android.FlutterActivity;
+
 public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView line, center;
@@ -212,7 +214,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void openBarcode(String codebarType) {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this);  // Used to bind to lifecycle
+        cameraProviderFuture = ProcessCameraProvider.getInstance(getApplicationContext());  // Used to bind to lifecycle
 
         cameraProviderFuture.addListener(() -> {
             ProcessCameraProvider cameraProvider = null;
@@ -235,7 +237,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             } catch(Exception e) {
                 logExceptionAndReturnToMainActivity(e);
             }
-        }, ContextCompat.getMainExecutor(this));
+        }, ContextCompat.getMainExecutor(getApplicationContext()));
     }
 
     public void afterReadingQR(String result){
