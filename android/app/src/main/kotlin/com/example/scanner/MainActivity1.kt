@@ -15,7 +15,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 
 
-class MainActivity: FlutterActivity() {
+class MainActivity1: FlutterActivity() {
     private val CHANNEL = "example.flutter.dev/scanner"
     var resultScan = ""
     //private val permissions = Permissions()

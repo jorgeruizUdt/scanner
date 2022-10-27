@@ -8,7 +8,7 @@
         android:name="android.app.Application"
         android:icon="@mipmap/ic_launcher">
         <activity
-            android:name=".MainActivity"
+            android:name=".MainActivity1"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

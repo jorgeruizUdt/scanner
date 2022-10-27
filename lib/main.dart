@@ -32,14 +32,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static const scannerChannel = MethodChannel("example.flutter.dev/scanner");
+  static const scannerChannel = MethodChannel("example.flutter.dev/scannerJava");
   String? _scannerResult;
 
   Future<void> openScanner() async {
     String result;
 
     try {
-      final String channelResult = await scannerChannel.invokeMethod('openScanner');
+      final String channelResult = await scannerChannel.invokeMethod('scannerJava');
       result = channelResult;
     } on PlatformException catch (error) {
       result = "Platform error \n ${error.message}";

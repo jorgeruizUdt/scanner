@@ -1,5 +1,10 @@
 package com.example.scanner;
 
+import androidx.annotation.NonNull;
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.MethodChannel;
+
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import android.Manifest;
@@ -46,11 +51,48 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
-public class Scanner extends AppCompatActivity implements View.OnClickListener {
+import io.flutter.embedding.android.FlutterActivity;
+
+public class MainActivity extends FlutterActivity {
+  private static final String CHANNEL = "example.flutter.dev/scannerJava";
+
+  @Override
+  public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+  super.configureFlutterEngine(flutterEngine);
+    new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
+        .setMethodCallHandler(
+          (call, result) -> {
+            if (call.method.equals("scannerJava")) {
+                String formElement = "fillEnviarFromQr";
+                String operator = "CFE";
+
+                Scanner scanner = new Scanner();
+                ImageAnalysis imageAnalysis = scanner.openBarcode(formElement);
+                ArrayList qrRes = scanner.getImageAnalysisObj(scanner.getBarcodeScannerObj(formElement));
+
+
+              if (qrRes.get(0) != "" || qrRes.get(0) != null) {
+                result.success(qrRes.get(0));
+              } else {
+                result.error("UNAVAILABLE", "Battery level not available.", null);
+              }
+            } else {
+              result.notImplemented();
+            }
+          }
+        );
+  }
+
+
+
+  public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView line, center;
     //private SurfaceView cameraView;
@@ -75,7 +117,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(Scanner.this, MainActivity1.class);
+                    Intent intent = new Intent(Scanner.this, MainActivity.class);
                     startActivityGracefully(intent);
                     // stop returning and rebounding between activities
                     finish();
@@ -116,7 +158,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
     private void logExceptionAndReturnToMainActivity(Exception e) {
         Log.d("fail Scanner", " error:  " + e.getMessage() + "----");
-        Intent MainIntent = new Intent(Scanner.this, MainActivity1.class);
+        Intent MainIntent = new Intent(Scanner.this, MainActivity.class);
         this.startActivityGracefully(MainIntent);
         // stop returning and rebounding between activities
         finish();
@@ -174,7 +216,9 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public ImageAnalysis getImageAnalysisObj(BarcodeScanner barcodeScanner) {
+    public ArrayList getImageAnalysisObj(BarcodeScanner barcodeScanner) {
+        ArrayList arr = new ArrayList();
+        String[] qrRes = new String[1];
         ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                 .setTargetResolution(new Size(1280, 1024))
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -191,8 +235,8 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
                         barcodeScanner.process(image).addOnSuccessListener( barcodes-> {
                             if (barcodes != null && barcodes.size() > 0) {
                                 Barcode barcode = barcodes.get(0);
-                                afterReadingQR(barcode.getRawValue());
-                                return;
+                                 qrRes[0] = afterReadingQR(barcode.getRawValue());
+                                 arr.add(qrRes[0]);
                             }
                             imageProxy.close();
                         }).addOnFailureListener(ex -> {
@@ -205,13 +249,15 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
                 }
             }
         );
-        return imageAnalysis;
+        arr.add(imageAnalysis);
+        return arr;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void openBarcode(String codebarType) {
+    public ImageAnalysis openBarcode(String codebarType) {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
         cameraProviderFuture = ProcessCameraProvider.getInstance(getApplicationContext());  // Used to bind to lifecycle
+        final ImageAnalysis[] imageAnalysis = new ImageAnalysis[1];
 
         cameraProviderFuture.addListener(() -> {
             ProcessCameraProvider cameraProvider = null;
@@ -226,18 +272,20 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             BarcodeScanner barcodeScanner = getBarcodeScannerObj(codebarType);
             // Used to pass images to the BarcodeScanner from the camera feed
             // and defines what to do with the detections
-            ImageAnalysis imageAnalysis = getImageAnalysisObj(barcodeScanner);
+            imageAnalysis[0] = (ImageAnalysis) getImageAnalysisObj(barcodeScanner).get(1);
             try {
                 cameraProvider.unbindAll();
                 cameraProvider.bindToLifecycle(
-                        this, cameraSelector, preview, imageAnalysis);
+                        this, cameraSelector, preview, imageAnalysis[0]);
             } catch(Exception e) {
                 logExceptionAndReturnToMainActivity(e);
             }
         }, ContextCompat.getMainExecutor(getApplicationContext()));
+
+        return imageAnalysis[0];
     }
 
-    public void afterReadingQR(String result){
+    public String afterReadingQR(String result){
         if (result != null) {
             //we have a result
             String scanContent;
@@ -253,13 +301,16 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
             if (Objects.equals(operator, "SACMEX")) {
                 scanContent = processSACMEXBarcode(scanContent);
-                if (scanContent.isEmpty()) return;
+                if (scanContent.isEmpty()) return null;
                 Log.d("Scanner", "scanContent after SACMEX: " + scanContent);
             }
             String formElement = bundle.getString("inputElement");
             String scanFormat = "QR_CODE";
 
-            Intent MainIntent = new Intent(Scanner.this, MainActivity1.class);
+            return scanContent;
+
+            /*
+            Intent MainIntent = new Intent(Scanner.this, MainActivity.class);
             //MainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("inputElement", formElement);
@@ -270,20 +321,24 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             this.startActivityGracefully(MainIntent);
             // stop returning and rebounding between activities
             finish();
+             */
         }else{
             Toast toast = Toast.makeText(getApplicationContext(),
             "No scan data received!", Toast.LENGTH_SHORT);
             toast.show();
 
+            /*
             Intent MainIntent = new Intent(Scanner.this,
-                    MainActivity1.class);
+                    MainActivity.class);
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("FORMAT", "NA");
             MainIntent.putExtra("CONTENT", "NA");
             this.startActivityGracefully(MainIntent);
             // stop returning and rebounding between activities
             finish();
+             */
         }
+        return null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -300,7 +355,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Intent MainIntent = new Intent(Scanner.this,
-                                    MainActivity1.class);
+                                    MainActivity.class);
                             startActivityGracefully(MainIntent);
                             // stop returning and rebounding between activities
                             finish();
@@ -358,7 +413,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
     }
     @Override
     public void onBackPressed(){
-        Intent intent = new Intent(Scanner.this, MainActivity1.class);
+        Intent intent = new Intent(Scanner.this, MainActivity.class);
 
         this.startActivityGracefully(intent);
         // stop returning and rebounding between activities
@@ -393,4 +448,9 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
 
         return scanContent;
     }
+}
+
+
+
+
 }
