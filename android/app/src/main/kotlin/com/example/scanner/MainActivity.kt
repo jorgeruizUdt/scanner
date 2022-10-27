@@ -17,7 +17,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "example.flutter.dev/scanner"
-    public var resultScan = ""
+    var resultScan = ""
     //private val permissions = Permissions()
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -27,15 +27,29 @@ class MainActivity: FlutterActivity() {
         methodChannel.setMethodCallHandler{
             call, result ->
             if(call.method == "openScanner") {
-                openScanner()
-                result.success(resultScan)
+                result.success(openScanner())
             }else{
                 result.notImplemented()
             }
         }
     }
 
-    private fun openScanner() {
+    private fun openScanner() : String{
+        var formElement: String = "fillEnviarFromQr"
+        //var formElement: String = "BarCode"
+        var operator: String = "CFE"
+
+        val intentS = Intent(this, Scanner::class.java)
+        intentS.putExtra("inputElement", formElement)
+        intentS.putExtra("operator", operator)
+        startActivity(intentS)
+
+        val res : String
+        res = intentS!!.getStringExtra("CONTENT").toString()
+        return res
+    }
+
+    private fun openScanner1() {
         var formElement: String = "fillEnviarFromQr"
         //var formElement: String = "BarCode"
         var operator: String = "CFE"
@@ -67,10 +81,6 @@ class MainActivity: FlutterActivity() {
 
         resultScan = CONTENT.toString()
         Log.d("SCAN_QR", resultScan)
-        if (resultScan != "" && resultScan != null)
-            return;
     }
-
-    
 
 }

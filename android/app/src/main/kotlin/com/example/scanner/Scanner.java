@@ -196,6 +196,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
                             if (barcodes != null && barcodes.size() > 0) {
                                 Barcode barcode = barcodes.get(0);
                                 afterReadingQR(barcode.getRawValue());
+                                return;
                             }
                             imageProxy.close();
                         }).addOnFailureListener(ex -> {
@@ -262,17 +263,15 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             String formElement = bundle.getString("inputElement");
             String scanFormat = "QR_CODE";
 
-            Intent MainIntent = new Intent(Scanner.this,
-                    MainActivity.class);
-            MainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            MainIntent.putExtra("purpose", "scan");
+            Intent MainIntent = new Intent(Scanner.this, MainActivity.class);
+            //MainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("inputElement", formElement);
             MainIntent.putExtra("FORMAT", scanFormat);
             MainIntent.putExtra("CONTENT", scanContent);
             Log.d("SCAN_QR_11", scanContent);
 
-            this.startActivity(MainIntent);
+            this.startActivityGracefully(MainIntent);
             // stop returning and rebounding between activities
             finish();
         }else{
@@ -285,7 +284,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
             MainIntent.putExtra("purpose", "scan");
             MainIntent.putExtra("FORMAT", "NA");
             MainIntent.putExtra("CONTENT", "NA");
-            this.startActivity(MainIntent);
+            this.startActivityGracefully(MainIntent);
             // stop returning and rebounding between activities
             finish();
         }
@@ -377,7 +376,7 @@ public class Scanner extends AppCompatActivity implements View.OnClickListener {
      */
     private void startActivityGracefully(Intent intent) {
         // skip onCreate for already existing main activity
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityIfNeeded(intent, 0);
     }
 
